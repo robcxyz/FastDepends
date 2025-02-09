@@ -21,6 +21,8 @@ from typing_extensions import (
     get_origin,
 )
 
+from pydantic._internal._signature import _HAS_DEFAULT_FACTORY_CLASS
+
 from fast_depends._compat import ConfigDict, create_model, get_config_base
 from fast_depends.core.model import CallModel, ResponseModel
 from fast_depends.dependencies import Depends
@@ -127,6 +129,9 @@ def build_call_model(
             var_keyword_arg = param_name
         elif param.default is inspect.Parameter.empty:
             default = Ellipsis
+        elif isinstance(param.default, _HAS_DEFAULT_FACTORY_CLASS):
+            # For pydantic default_factory inputs, this is used to mark the field
+            continue
         else:
             default = param.default
 

@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from fast_depends.core import build_call_model
-from fast_depends.use import inject
+from fast_depends.use import inject, Depends
 
 from .wrapper import noop_wrap
 
 
 class Model(BaseModel):
     a: str
+    b: list = Field(default_factory=list)
 
 
 def base_func(a: int) -> str:
@@ -41,3 +42,11 @@ def test_prebuild_with_wrapper() -> None:
     else:
         # pydantic v1
         call_model.model.update_forward_refs()
+
+
+def test_prebuild_with_inject_on_model() -> None:
+    @inject
+    def model_func(m: Model = Depends(Model)) -> Model:
+        return m
+
+    assert model_func(a="Hi!").b == []
